@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Đăng nhập / Đăng kí</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="css/auth.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container-auth">
+        <div class="auth-card">
+            <!-- Đăng nhập -->
+            <div id="loginForm" class="visible-form">
+                <div class="auth-header">
+                    <h1>Đăng Nhập</h1>
+                    <p>Chào mừng bạn quay trở lại</p>
+                </div>
+                <div class="auth-body">
+                    <form id="formLogin" method="POST">
+                        <div class="form-group">
+                            <label for="loginEmail">Email</label>
+                            <input 
+                                type="email" 
+                                id="loginEmail" 
+                                name="email" 
+                                placeholder="Nhập email của bạn"
+                                required
+                            >
+                            <div class="error-message" id="loginEmailError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="loginPassword">Mật khẩu</label>
+                            <input 
+                                type="password" 
+                                id="loginPassword" 
+                                name="password" 
+                                placeholder="Nhập mật khẩu"
+                                required
+                            >
+                            <div class="error-message" id="loginPasswordError"></div>
+                        </div>
+
+                        <div id="loginError" class="error-message"></div>
+                        <div id="loginSuccess" class="success-message"></div>
+
+                        <button type="submit" class="btn-submit" id="loginBtn">
+                            Đăng Nhập
+                        </button>
+                    </form>
+
+                    <div class="form-toggle">
+                        Chưa có tài khoản? <a onclick="toggleForm()">Đăng kí ngay</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Đăng kí -->
+            <div id="signupForm" class="hidden-form">
+                <div class="auth-header">
+                    <h1>Đăng Kí</h1>
+                    <p>Tạo tài khoản mới</p>
+                </div>
+                <div class="auth-body">
+                    <!-- form -->
+                    <form id="formSignup" method="POST">
+                        <div class="form-group">
+                            <label for="signupName">Username</label>
+                            <input 
+                                type="text" 
+                                id="signupName" 
+                                name="username" 
+                                placeholder="Nhập Username"
+                                required
+                            >
+                            <div class="error-message" id="signupNameError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupEmail">Email</label>
+                            <input 
+                                type="email" 
+                                id="signupEmail" 
+                                name="email" 
+                                placeholder="Nhập email"
+                                required
+                            >
+                            <div class="error-message" id="signupEmailError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupPassword">Mật khẩu</label>
+                            <input 
+                                type="password" 
+                                id="signupPassword" 
+                                name="password" 
+                                placeholder="Nhập mật khẩu (ít nhất 6 ký tự)"
+                                required
+                            >
+                            <div class="error-message" id="signupPasswordError"></div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="signupConfirm">Xác nhận mật khẩu</label>
+                            <input 
+                                type="password" 
+                                id="signupConfirm" 
+                                name="confirm_password" 
+                                placeholder="Xác nhận mật khẩu"
+                                required
+                            >
+                            <div class="error-message" id="signupConfirmError"></div>
+                        </div>
+
+                        <div id="signupError" class="error-message"></div>
+                        <div id="signupSuccess" class="success-message"></div>
+
+                        <button type="submit" class="btn-submit" id="signupBtn">
+                            Đăng Kí
+                        </button>
+                    </form>
+
+                    <div class="form-toggle">
+                        Đã có tài khoản? <a onclick="toggleForm()">Đăng nhập</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+</body>
+</html>
