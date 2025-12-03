@@ -265,18 +265,17 @@ router.post(
       if (!file) {
         return res.status(400).json({ ok: false, error: "Không có file" });
       }
-
+      console.log("File: ", file);
       // 1. tạo message mới
       const message = await Message.create({
         conversation: conversationId,
-        sender: req.user._id.toString(),
+        sender: req.user.sub.toString(),
         content: content || "[image]",  // hoặc để rỗng
         // có thể thêm type: "image"
       });
-
       // 2. tạo File gắn với message
       const fileDoc = await File.create({
-        uploader: req.user._id.toString(),
+        uploader: req.user.sub.toString(),
         conversation: conversationId,
         message: message._id,
         url: `/upload/${file.filename}`,        // sau này cho static
@@ -285,8 +284,16 @@ router.post(
         size: file.size,
         // metadata: có thể bổ sung nếu dùng thư viện như sharp hoặc ffprobe
       });
-
-      // 3. chuẩn hóa message trả về cho frontend
+      // 3. cập nhật message.files trong DB
+      await Message.findByIdAndUpdate(
+        message._id,
+        { $push: { files: fileDoc._id } }
+      );
+      await Conversation.findByIdAndUpdate(
+        conversationId,
+        { $set: {lastActiveAt: new Date(), }}
+      );
+      // 4. chuẩn hóa message trả về cho frontend
       const normalized = {
         id: message._id.toString(),
         conversation: message.conversation,
@@ -303,8 +310,9 @@ router.post(
           },
         ],
       };
-
+      console.log("normalize: ", normalized);
       // 4. emit socket để các client khác nhận được
+      const io = req.app.get('io'); // Lấy io từ app
       io.to(conversationId).emit("chat:message", normalized);
 
       res.json({ ok: true, message: normalized });
@@ -316,110 +324,3 @@ router.post(
 );
 
 export default router;
-
-// =====================================================
-// 4. REACTION: thả emoji vào tin nhắn
-// =====================================================
-
-// router.post("/messages/:id/reactions", authMiddleware, async (req, res) => {
-//   try {
-//     const userId = req.user.sub;
-//     const { id } = req.params;
-//     const { emoji } = req.body;
-
-//     if (!emoji) {
-//       return res.status(400).json({ message: "Thiếu emoji" });
-//     }
-
-//     const message = await Message.findById(id).populate("conversation");
-//     if (!message) {
-//       return res.status(404).json({ message: "Không tìm thấy message" });
-//     }
-
-//     const conversation = message.conversation;
-//     const isMember = conversation.members.some(
-//       m => m.user.toString() === userId
-//     );
-//     if (!isMember) {
-//       return res.status(403).json({ message: "Bạn không thuộc cuộc trò chuyện này" });
-//     }
-
-//     const reaction = await Reaction.findOneAndUpdate(
-//       { message: id, user: userId, emoji },
-//       { message: id, user: userId, emoji },
-//       { upsert: true, new: true }
-//     );
-
-//     return res.status(201).json({ reaction });
-//   } catch (err) {
-//     console.error("Reaction error:", err);
-//     return res.status(500).json({ message: "Lỗi server khi tạo reaction" });
-//   }
-// });
-
-// // Xoá reaction
-// router.delete("/messages/:id/reactions", authMiddleware, async (req, res) => {
-//   try {
-//     const userId = req.user.sub;
-//     const { id } = req.params;
-//     const { emoji } = req.body;
-
-//     if (!emoji) {
-//       return res.status(400).json({ message: "Thiếu emoji" });
-//     }
-
-//     await Reaction.findOneAndDelete({
-//       message: id,
-//       user: userId,
-//       emoji,
-//     });
-
-//     return res.json({ message: "Đã xoá reaction" });
-//   } catch (err) {
-//     console.error("Delete reaction error:", err);
-//     return res.status(500).json({ message: "Lỗi server khi xoá reaction" });
-//   }
-// });
-
-// =====================================================
-// 5. MEMBER SETTINGS: mute, nickname trong group
-// =====================================================
-
-// router.patch("/conversations/:id/settings", authMiddleware, async (req, res) => {
-//   try {
-//     const userId = req.user.sub;
-//     const { id } = req.params;
-//     const { nickname, isMuted, mutedUntil } = req.body;
-
-//     const conversation = await Conversation.findById(id);
-//     if (!conversation) {
-//       return res.status(404).json({ message: "Không tìm thấy conversation" });
-//     }
-
-//     const isMember = conversation.members.some(
-//       m => m.user.toString() === userId
-//     );
-//     if (!isMember) {
-//       return res.status(403).json({ message: "Bạn không thuộc cuộc trò chuyện này" });
-//     }
-
-//     const settings = await MemberSettings.findOneAndUpdate(
-//       { user: userId, conversation: id },
-//       {
-//         user: userId,
-//         conversation: id,
-//         ...(nickname !== undefined && { nickname }),
-//         ...(isMuted !== undefined && { isMuted }),
-//         ...(mutedUntil !== undefined && { mutedUntil }),
-//       },
-//       { upsert: true, new: true }
-//     );
-
-//     return res.json({ settings });
-//   } catch (err) {
-//     console.error("Member settings error:", err);
-//     return res.status(500).json({ message: "Lỗi server khi cập nhật cài đặt thành viên" });
-//   }
-// });
-
-

@@ -16,9 +16,10 @@ webRouter.get("/", (req, res) => {
 
 webRouter.get("/main",authMiddleware,async (req, res) => {
   const userId = req.user.sub;
+  const urlAvatar = req.user.urlAvatar;
   const user =await User.findById(userId);
   if (!user) return res.status(404).json({ message: "Không tìm thấy user" });
-  res.render("main", {username: user.username, userId: userId});   // views/main.ejs
+  res.render("main", {username: user.username, userId: userId, urlAvatar: urlAvatar});   // views/main.ejs
 });
 
 export default webRouter;

@@ -15,10 +15,10 @@
                 <!-- User Profile -->
                 <div class="user-profile p-3 border-bottom">
                     <div class="d-flex align-items-center gap-2">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user1" alt="User" class="rounded-circle" width="40" height="40" style="border-radius: 50%; border: 3px solid #79cb62;">
+                        <img src="<%= urlAvatar %>" alt="User" class="rounded-circle" width="40" height="40" style="border-radius: 50%; border: 3px solid #8bd576;">
                         <div>
                             <div class="fw-bold"><%= username %></div>
-                            <small class="text-muted">Online</small>
+                            <small class="text-muted online">Online</small>
                         </div>
                     </div>
                 </div>
@@ -33,13 +33,6 @@
 
                 <!-- Conversation List -->
                 <div class="conversation-list overflow-auto" id="conversation-list">
-                    <!-- <div class="conversation-item active" onclick="selectConversation(this, 1)">
-                        <img src="https://api.dicebear.com/7.x/avataaars/svg?seed=user2" alt="Avatar" class="rounded-circle" width="45" height="45">
-                        <div class="conversation-info">
-                            <div class="conversation-name">Nguyễn Văn A</div>
-                            <small class="text-muted">Bạn: Okay, đã xong!</small>
-                        </div>
-                    </div> -->
                 </div>
                 <!-- render danh sách user,conversation,group ở đây -->
                 <!-- <div id="list" class="list" style="display:block;"></div> -->
@@ -56,7 +49,7 @@
 
             <!-- CHAT AREA -->
             <div class="col-md-9 col-lg-9 d-flex flex-column h-100">
-                <div class="h-100 d-flex flex-column border-start border-3 border-primary">
+                <div class="h-100 d-flex flex-column">
                     <!-- Chat Header -->
                     <div class="chat-header bg-white border-bottom p-3 d-flex justify-content-between align-items-center">
                         <div class="d-flex align-items-center gap-3">

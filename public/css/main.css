@@ -16,6 +16,7 @@ body,
 .container-fluid {
   height: 100%;
   overflow: hidden;
+  padding: 0;
 }
 
 .row {
@@ -30,11 +31,11 @@ body,
   height: 100%;
   display: flex;
   flex-direction: column;
-  background: oklch(88.368% 0.03267 95.448);
+  background: #ffffff;
   overflow-y: auto;
   box-sizing: border-box;
   position: relative;
-  border-right: 3px solid #838ac4;
+  border-right: 1px solid #E5E7EB;
 }
 .bottom-bar {
   position: sticky;
@@ -43,9 +44,9 @@ body,
   width: 100%;
   display: flex;
   justify-content: space-between;
-  background: oklch(88.368% 0.03267 95.448);
+  background: #ffffff;
   padding: 10px 20px;
-  border-top: 3px solid #ffffff;
+  border-top: 3px solid #E5E7EB;
   z-index: 10;
 }
 .icon-container-user {
@@ -124,6 +125,8 @@ body,
   transition: all 0.2s;
   align-items: center;
   margin-bottom: 2px;
+  margin-left: 12px;
+  margin-right: 12px;
 }
 
 .conversation-item:hover {
@@ -173,7 +176,12 @@ body,
 .chat-header .btn-light:hover {
   background: #e4e6eb;
 }
-
+.status-partner.online {
+  color:#31a24c !important;
+}
+.status-partner.offline {
+  color: red !important;
+}
 /* FIX QUAN TRỌNG: Chat panel với position relative */
 .chat-panel {
   display: flex;
@@ -185,7 +193,7 @@ body,
 
 /* MESSAGES AREA - Điều chỉnh để có padding-bottom cho input area */
 .messages-area {
-  background: #ffffff;
+  background: #F5F7FA;
   overflow-y: auto;
   padding: 16px;
   padding-bottom: 96px; /* Thêm khoảng trống cho input area (80px height + 16px padding) */
@@ -195,7 +203,7 @@ body,
 .message-group {
   display: flex;
   flex-direction: column;
-  margin-bottom: 8px;
+  margin-bottom: 10px;
 }
 
 .message {
@@ -204,7 +212,40 @@ body,
   gap: 8px;
   margin-bottom: 4px;
 }
+/* Container ảnh */
+.message-image-wrapper {
+  margin-top: 8px;
+  max-width: 100%;
+  display: inline-block;
+  text-align: center;
+}
 
+.message-image {
+  max-width: 100%;       /* Giới hạn chiều rộng ảnh */
+  max-height: 200px;     /* Giới hạn chiều cao ảnh */
+  width: auto;
+  height: auto;
+  border-radius: 8px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Hiệu ứng bóng cho ảnh */
+  object-fit: cover;     /* Đảm bảo ảnh không bị méo */
+}
+
+/* Hiển thị file khác như pdf, doc, zip... */
+.message-file-wrapper {
+  margin-top: 8px;
+  padding: 6px;
+  background-color: #f4f4f4;
+  border-radius: 4px;
+}
+
+.message-file-link {
+  color: #007bff;
+  text-decoration: none;
+}
+
+.message-file-link:hover {
+  text-decoration: underline;
+}
 .message.received {
   justify-content: flex-start;
 }
@@ -379,7 +420,7 @@ body,
 }
 
 .user-item.offline .status {
-  color: transparent;
+  color: red;
 }
 
 

@@ -27,6 +27,7 @@ export function generateAccessToken(user){
     sub: user._id.toString(),
     email: user.email,
     username: user.username,
+    urlAvatar: user.avatarUrl
   };
 
   return jwt.sign(payload, JWT_SECRET, {

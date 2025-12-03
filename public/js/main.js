@@ -48,8 +48,6 @@ function formatTime(dateString) {
 }
 //render message khi nhận tin nhắn
 function appendMessage(message, currentUserId, messagesArea) {
-  console.log("sender: ", message.sender);
-  console.log("current user id: ", currentUserId);
   const isOwn = String(message.sender) === String(currentUserId);
   const time = formatTime(message.createdAt);
   const text = message.content;
@@ -58,6 +56,7 @@ function appendMessage(message, currentUserId, messagesArea) {
     ? `<span class="message-status ms-2">✓✓</span>`
     : "";
   let filesHTML = "";
+  //kiểm tra mảng files xem có ảnh không
   if (Array.isArray(message.files) && message.files.length > 0) {
     const parts = message.files.map((file) => {
       const fileName = file.fileName ? escapeHtml(file.fileName) : "File";
@@ -87,11 +86,22 @@ function appendMessage(message, currentUserId, messagesArea) {
 
     filesHTML = `<div class="message-files mt-1">${parts.join("")}</div>`;
   }
+
+  const shouldShowText = text && text !== "[image]" 
+                              && !(Array.isArray(message.files) && message.files.length > 0);
+                              
+                              
+  const textHTML = shouldShowText
+    ? `<div class="message-bubble">${escapeHtml(text)}</div>`
+    : "";
+
+
   const messageHTML = `
     <div class="message-group mb-3">
       <div class="message ${isOwn ? "sent" : "received"} mb-2">
-        <div class="message-bubble">${escapeHtml(text)}</div>
-        <small class="text-muted  ${isOwn ? "me-2" : "ms-2"}me-2">${time}</small>
+        ${textHTML}
+        ${filesHTML}
+        <small class="text-muted  "${isOwn ? "me-2" : "ms-2"}">${time}</small>
         ${statusHTML}
       </div>
     </div>
@@ -256,7 +266,7 @@ async function loadUsers() {
     console.error("Lỗi khi tải người dùng:", error);
   }
 }
-async function openDirectConversation(partnerId, partnerUsername, partnerAvtUrl,partnerStatus) {
+async function openDirectConversation(partnerId, partnerUsername, partnerAvtUrl,partnerStatus,statusHeader) {
   try {
     const res = await fetch(`${API_BASE_URL}/conversations`, {
       method: "POST",
@@ -287,8 +297,10 @@ async function openDirectConversation(partnerId, partnerUsername, partnerAvtUrl,
     // Update chat header
     document.querySelector(".chat-header img").src = partnerAvtUrl;
     document.querySelector(".chat-header .fw-bold").textContent = partnerUsername;
-    document.querySelector(".chat-header .status-partner").textContent = partnerStatus;
-
+    statusHeader.textContent = partnerStatus;
+    
+    statusHeader.classList.remove("online", "offline");
+    statusHeader.classList.add(partnerStatus === "Online" ? "online" : "offline");
     // 3. Load lịch sử tin nhắn (nếu có endpoint)
     await loadMessagesForConversation(currentConversationId);
   } catch (err) {
@@ -473,7 +485,7 @@ async function loadUsersForGroup() {
 
 // hàm DOM chính
 document.addEventListener('DOMContentLoaded', function() {
-  
+  const statusHeader = document.querySelector(".chat-header .status-partner");
   const currentUserId = window.currentUserId;
   loadUsers();
   const messageInput = document.getElementById("messageInput")
@@ -500,29 +512,29 @@ document.addEventListener('DOMContentLoaded', function() {
     imageInput.click(); // mở hộp chọn file
   });
   imageInput.addEventListener("change", async (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
+    const file = e.target.files[0];
+    if (!file) return;
 
-  const formData = new FormData();
-  formData.append("file", file);
-  formData.append("conversationId", currentConversationId); // bạn đang chat ở phòng nào
-  formData.append("content", ""); // nếu muốn kèm caption thì gửi text ở đây
-
-  const res = await fetch(`${API_BASE_URL}/messages/image`, {
-    method: "POST",
-    body: formData,
-    credentials: "include", // nếu dùng cookie
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("conversationId", currentConversationId); // bạn đang chat ở phòng nào
+    formData.append("content", ""); // nếu muốn kèm caption thì gửi text ở đây
+      console.log("Dữ liệu gửi đi formdata= ",formData);
+    const res = await fetch(`${API_BASE_URL}/messages/image`, {
+      method: "POST",
+      body: formData,
+      credentials: "include", // nếu dùng cookie
+    });
+    const data = await res.json();
+    console.log(data);
+    if (!data.ok) {
+      console.error(data.error);
+      return;
+    }
+    // tin nhắn kèm ảnh là data.message
+    // render ngay hoặc chờ socket bắn về
+    // appendMessage(data.message, currentUserId, messagesArea);
   });
-  const data = await res.json();
-  console.log(data);
-  if (!data.ok) {
-    console.error(data.error); // đang lỗi ở đây=====================================================
-    return;
-  }
-  // tin nhắn kèm ảnh là data.message
-  // render ngay hoặc chờ socket bắn về
-  appendMessage(data.message);
-});
 
 
 
@@ -533,6 +545,7 @@ document.addEventListener('DOMContentLoaded', function() {
       appendMessage(message, currentUserId, messagesArea);
     }
   });
+
   //xử lí nhấn nút Trò chuyện trong user
   document.addEventListener("click", (e) => {
     const btn = e.target.closest(".user-item");
@@ -544,7 +557,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const partnerStatus = btn.dataset.status;
 
     //load box chat
-    openDirectConversation(partnerId, partnerUsername, partnerAvtUrl,partnerStatus);
+    openDirectConversation(partnerId, partnerUsername, partnerAvtUrl,partnerStatus,statusHeader);
   });
   // xử lí nhấn group chat
   document.addEventListener("click", (e) => {

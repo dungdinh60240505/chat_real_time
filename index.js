@@ -12,11 +12,15 @@ import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import { fileURLToPath } from 'node:url';
 import path, { dirname } from 'node:path';
+//router
 import router from './router/index.js';
 import webRouter from './router/web.js';
+//model
 import User from "./model/user/user.js";
 import Message from "./model/message/message.js";
+//multer
 import upload from "./config/multer.js";
+//env
 const PORT = process.env.PORT || 3000;
 const MONGO_URI = process.env.MONGO_URI || "mongodb://localhost:27017/chatData";
 const CLIENT_ORIGIN = process.env.CLIENT_ORIGIN || "http://localhost:3000";
@@ -51,6 +55,7 @@ const io = new Server(server,{
         credentials: true,
     },
 });
+//lưu đối tượng io vào app để sử dụng trong các route
 app.set("io", io);
 
 // kết nối mongoDB
@@ -146,7 +151,7 @@ io.on("connection", async (socket) => {
         sender: new Types.ObjectId(user.userId),
         content,
       });
-
+      newMessage.save();
       const msgPayload = {
         id: newMessage._id.toString(),
         conversation: newMessage.conversation.toString(),
@@ -170,8 +175,9 @@ io.on("connection", async (socket) => {
     try {
       const messages = await Message.find({ conversation })
         .sort({ createdAt: -1 })
-        .limit(limit);
-
+        .limit(limit)
+        .populate('files');
+      console.log("Tin nhắn load được: ", messages);
       const normalized = messages
         .map((m) => ({
           id: m._id.toString(),
@@ -179,9 +185,15 @@ io.on("connection", async (socket) => {
           sender: m.sender.toString(),
           content: m.content,
           createdAt: m.createdAt,
+          files: ( m.files || [] ).map((file) => ({
+            id: file._id.toString(),
+            url: file.url,
+            fileName: file.fileName,
+            fileType: file.fileType,
+            size: file.size,
+          })),
         }))
         .reverse();
-        console.log(normalized);
       ack?.({ ok: true, messages: normalized });
     } catch (error) {
       console.error("chat:history error:", error);
@@ -196,10 +208,10 @@ io.on("connection", async (socket) => {
       return;
     }
     try {
-      const { username, conversation, email } = user;
+      const { username, conversation, userId } = user;
       // Cập nhật trạng thái offline trong database
       await User.findOneAndUpdate(
-        { email: email },
+        { _id: userId },
         { isOnline: false },
         { new: true }
       );
@@ -230,6 +242,7 @@ io.on("connection", async (socket) => {
 // mount router
 app.use("/", webRouter);
 app.use("/api", router);
+
 server.listen(PORT, () => {
   console.log(`🚀 Server đang chạy tại http://localhost:${PORT}`);
 });
